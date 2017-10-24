@@ -154,6 +154,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView mLastUpdateTimeTextView;
     private TextView mLatitudeTextView;
     private TextView mLongitudeTextView;
+    private TextView mPressureTextView;
+    private TextView mLightTextView;
 
     // Labels.
     private String mLatitudeLabel;
@@ -161,7 +163,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private String mPressureLabel;
     private String mLightLabel;
     private String mLastUpdateTimeLabel;
-
 
     /**
      * Tracks the status of the location updates request. Value changes when the user presses the
@@ -175,15 +176,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private String mLastUpdateTime;
 
     /*    mqttt client    */
-    MqttAndroidClient client;
-    String topic = "devices/smartphones/sensors/all";
-    String neptune = "tcp://neptune.usc.edu:3883";
-    String imscBroker = "tcp://imscspark3.usc.edu:1880";
+    private MqttAndroidClient client;
+    private String topic = "devices/smartphones/sensors/all";
+    private String neptune = "tcp://neptune.usc.edu:3883";
+    private String imscBroker = "tcp://imscspark3.usc.edu:1880";
 
     private SensorManager mSensorManager;
     private Sensor mPressure;
     private Sensor mLight;
-
 
     private float millibars_of_pressure = 0;
     private float lumens = 0;
@@ -206,12 +206,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mStopUpdatesButton = (Button) findViewById(R.id.stop_updates_button);
         mLatitudeTextView = (TextView) findViewById(R.id.latitude_text);
         mLongitudeTextView = (TextView) findViewById(R.id.longitude_text);
+        mPressureTextView = (TextView) findViewById(R.id.pressure_text);
+        mLightTextView = (TextView) findViewById(R.id.light_text);
         mLastUpdateTimeTextView = (TextView) findViewById(R.id.last_update_time_text);
 
         // Set labels.
         mLatitudeLabel = getResources().getString(R.string.latitude_label);
         mLongitudeLabel = getResources().getString(R.string.longitude_label);
+        mPressureLabel = "Pressure";
+        mLightLabel = "Light";
         mLastUpdateTimeLabel = getResources().getString(R.string.last_update_time_label);
+
 
         mRequestingLocationUpdates = false;
         mLastUpdateTime = "";
@@ -332,7 +337,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 mCurrentLocation = locationResult.getLastLocation();
 
-                mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+                mLastUpdateTime = DateFormat.getDateTimeInstance().format(new Date());
                 updateLocationUI();
             }
         };
@@ -473,20 +478,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     mCurrentLocation.getLatitude()));
             mLongitudeTextView.setText(String.format(Locale.ENGLISH, "%s: %f", mLongitudeLabel,
                     mCurrentLocation.getLongitude()));
+
+            mPressureTextView.setText(String.format(Locale.ENGLISH, "%s: %f", mPressureLabel, millibars_of_pressure));
+            mLightTextView.setText(String.format(Locale.ENGLISH, "%s: %f", mLightLabel, lumens));
             mLastUpdateTimeTextView.setText(String.format(Locale.ENGLISH, "%s: %s",
                     mLastUpdateTimeLabel, mLastUpdateTime));
 
-
-
             String payload;
-
             payload = String.format(Locale.ENGLISH, "{\"Location\": {\"%s\": %f , \"%s\": %f}, \"%s\": %s, \"%s\": %f, \"%s\": %f}",
                     mLatitudeLabel, mCurrentLocation.getLatitude(), mLongitudeLabel,
                     mCurrentLocation.getLongitude(), "Timestamp", mLastUpdateTime,
                     "Light Sensor", lumens, "Barometer", millibars_of_pressure);
 
             Log.d(TAG, payload);
-            byte[] encodedPayload = new byte[0];
+            byte[] encodedPayload;
             try {
                 encodedPayload = payload.getBytes("UTF-8");
                 MqttMessage message = new MqttMessage(encodedPayload);
