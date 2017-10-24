@@ -14,11 +14,11 @@
   limitations under the License.
 -->
 <resources>
-    <string name="app_name">I3 Location Updates</string>
+    <string name="app_name">I3 Sensor Data Publisher</string>
 
     <string name="latitude_label">Latitude</string>
     <string name="longitude_label">Longitude</string>
-    <string name="last_update_time_label">Last location update time</string>
+    <string name="last_update_time_label">Last update time</string>
 
     <string name="start_updates">Start updates</string>
     <string name="stop_updates">Stop updates</string>
